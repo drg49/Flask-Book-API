@@ -1,0 +1,46 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+import os
+
+app = Flask(__name__)
+
+# The load_dotenv() function will load the environmental variables from the .env file into the os.environ dictionary. 
+# You can then access the environmental variables using os.environ.get('MY_VARIABLE').
+load_dotenv()
+
+database_uri = os.environ.get('DATABASE_URI')
+
+# Configure database connection
+app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+
+db = SQLAlchemy(app)
+
+# Define a model for the database
+class Book(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(75), nullable=False)
+
+
+@app.get('/')
+def index():
+    return 'The server is running.'
+
+@app.post('/create')
+def create():
+    data = request.get_json()
+    book = Book(title=data['title'])
+    db.session.add(book)
+    db.session.commit()
+    return jsonify({'message': 'The book was successfully created.'})
+
+@app.get('/get-all')
+def get_all():
+    books = Book.query.all()
+    output = []
+    for book in books:
+        output.append({'id': book.id, 'title': book.title})
+    return jsonify(output)
+
+if __name__ == '__main__':
+    app.run(debug=True)
