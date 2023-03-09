@@ -29,10 +29,10 @@ def index():
 @app.post('/create')
 def create():
     data = request.get_json()
-    book = Book(title=data['title'])
+    book = Book(title = data.get('title'))
     db.session.add(book)
     db.session.commit()
-    return jsonify({'message': 'The book was successfully created.'})
+    return jsonify({ 'message': 'The book was successfully created.' })
 
 @app.get('/get-all')
 def get_all():
@@ -41,6 +41,17 @@ def get_all():
     for book in books:
         output.append({'id': book.id, 'title': book.title})
     return jsonify(output)
+
+@app.delete('/delete/<int:book_id>')
+def delete(book_id):
+    try:
+        print(f'Attempting to delete book by ID: {book_id}')
+        Book.query.filter(Book.id == book_id).delete()
+        db.session.commit()
+        return jsonify({ 'message': 'The book was successfully deleted.' })
+    except Exception as e:
+        print(f'An exception occured: {e}')
+        return jsonify({ 'message': 'The book failed to delete.'})
 
 if __name__ == '__main__':
     app.run(debug=True)
