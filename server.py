@@ -51,7 +51,19 @@ def delete(book_id):
         return jsonify({ 'message': 'The book was successfully deleted.' })
     except Exception as e:
         print(f'An exception occured: {e}')
-        return jsonify({ 'message': 'The book failed to delete.'})
-
+        return jsonify({ 'message': 'The book failed to delete.' })
+    
+@app.patch('/update')
+def update():
+    try:
+        data = request.get_json()
+        book = Book.query.get_or_404(data.get('id'))
+        book.title = data.get('title')
+        db.session.commit()
+        return jsonify({ 'message': 'The book was successfully updated.' })
+    except Exception as e:
+        print(f'An exception occured: {e}')
+        return jsonify({ 'message': 'The book failed to update.' })
+    
 if __name__ == '__main__':
     app.run(debug=True)
