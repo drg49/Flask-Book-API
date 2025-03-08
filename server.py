@@ -42,6 +42,14 @@ def get_all():
         output.append({'id': book.id, 'title': book.title})
     return jsonify(output)
 
+@app.get('/find/<int:book_id>')
+def findBook(book_id):
+    book = Book.query.get(book_id)
+    if book:
+        return jsonify({ 'id': book.id, 'title': book.title })
+    else:
+        return jsonify({ 'message': 'The book does not exist.' })
+
 @app.delete('/delete/<int:book_id>')
 def delete(book_id):
     try:
