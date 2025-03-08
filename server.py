@@ -10,6 +10,7 @@ app = Flask(__name__)
 load_dotenv()
 
 database_uri = os.environ.get('DATABASE_URI')
+port = int(os.environ.get('FLASK_RUN_PORT', 5000))  # Default to 5000 if not set
 
 # Configure database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
@@ -20,6 +21,10 @@ db = SQLAlchemy(app)
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(75), nullable=False)
+    author = db.Column(db.String(255))
+    published_date = db.Column(db.Date)
+    genre = db.Column(db.String(100))
+    price = db.Column(db.Numeric(10, 2))
 
 
 @app.get('/')
@@ -74,4 +79,4 @@ def update():
         return jsonify({ 'message': 'The book failed to update.' })
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=port)
