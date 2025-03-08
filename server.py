@@ -31,6 +31,7 @@ class Book(db.Model):
 def index():
     return 'The server is running.'
 
+# Create a new book
 @app.post('/create')
 def create():
     data = request.get_json()
@@ -39,22 +40,56 @@ def create():
     db.session.commit()
     return jsonify({ 'message': 'The book was successfully created.' })
 
+# Get all books
 @app.get('/get-all')
 def get_all():
-    books = Book.query.all()
+    query_params = request.args
+    query = Book.query
+
+    # Check if the query parameters are present and filter the query accordingly
+    if 'id' in query_params:
+        query = query.filter(Book.id == query_params.get('id'))
+    if 'title' in query_params:
+        query = query.filter(Book.title.ilike(f"%{query_params.get('title')}%"))
+    if 'author' in query_params:
+        query = query.filter(Book.author.ilike(f"%{query_params.get('author')}%"))
+    if 'published_date' in query_params:
+        query = query.filter(Book.published_date == query_params.get('published_date'))
+    if 'genre' in query_params:
+        query = query.filter(Book.genre.ilike(f"%{query_params.get('genre')}%"))
+    if 'price' in query_params:
+        query = query.filter(Book.price == query_params.get('price'))
+
+    books = query.all()
     output = []
     for book in books:
-        output.append({'id': book.id, 'title': book.title})
+        output.append({
+            'id': book.id,
+            'title': book.title,
+            'author': book.author,
+            'published_date': book.published_date,
+            'genre': book.genre,
+            'price': book.price
+        })
     return jsonify(output)
 
+# Find a book by ID
 @app.get('/find/<int:book_id>')
 def findBook(book_id):
     book = Book.query.get(book_id)
     if book:
-        return jsonify({ 'id': book.id, 'title': book.title })
+        return jsonify({
+            'id': book.id,
+            'title': book.title,
+            'author': book.author,
+            'published_date': book.published_date,
+            'genre': book.genre,
+            'price': book.price
+        })
     else:
         return jsonify({ 'message': 'The book does not exist.' })
 
+# Delete a book by ID
 @app.delete('/delete/<int:book_id>')
 def delete(book_id):
     try:
@@ -66,6 +101,7 @@ def delete(book_id):
         print(f'An exception occured: {e}')
         return jsonify({ 'message': 'The book failed to delete.' })
     
+# Update a book by ID
 @app.patch('/update')
 def update():
     try:
